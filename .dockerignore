@@ -1,0 +1,5 @@
+.*
+!.ssh
+
+Dockerfile
+docker-compose*.yml
