@@ -22,7 +22,7 @@ if (len(sys.argv)==2):
     model = keras.models.load_model('../models/model04.h5')
 
 elif (len(sys.argv)==3):
-    mage = Image.open('../resources/' + sys.argv[1])
+    image = Image.open('../resources/' + sys.argv[1])
     model = keras.models.load_model('../models/' + sys.argv[2])
 else:
     print('Usage: python ejecutable_tfm <image> <model_optional>')
