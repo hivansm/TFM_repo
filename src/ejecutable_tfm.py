@@ -16,29 +16,42 @@ from PIL import Image
 from tensorflow import keras
 import matplotlib.pyplot as plt
 import sys
+import streamlit as st
+import io
 
-if (len(sys.argv)==2):
-    image = Image.open('../resources/' + sys.argv[1])
-    model = keras.models.load_model('../models/model04.h5')
+st.title('Predicción de tráfico')
 
-elif (len(sys.argv)==3):
-    image = Image.open('../resources/' + sys.argv[1])
-    model = keras.models.load_model('../models/' + sys.argv[2])
-else:
-    print('Usage: python ejecutable_tfm <image> <model_optional>')
-    exit()
+#if (len(sys.argv)==2):
+#    image = Image.open('../resources/' + sys.argv[1])
+model = keras.models.load_model('../models/model04.h5')
 
-print(image.mode)
-print(image.size)
+#elif (len(sys.argv)==3):
+#    image = Image.open('../resources/' + sys.argv[1])
+#    model = keras.models.load_model('../models/' + sys.argv[2])
+#else:
+#    st.write('Usage: python ejecutable_tfm <image> <model_optional>')
+#    exit()
 
-img = np.array(image.resize((32,32)))/255
+#print(image.mode)
+#print(image.size)
 
-prob_traf = model.predict(img.reshape((1,32,32,3)))[0][0]
+image_up = st.file_uploader('Imagen a analizar')
 
-print(f'Probabilidad de tráfico: {prob_traf*100}%')
+if image_up is not None:
+    bytes_data = image_up.read()
+    image = Image.open(io.BytesIO(bytes_data))
+    
+    img = np.array(image.resize((32,32)))/255
+    st.image(image)
 
-fig, ax = plt.subplots(1)
-ax.imshow(image, interpolation='nearest')
-ax.text(image.size[0]/5, image.size[1]/10, f'Probabilidad de tráfico: {round(prob_traf*100,2)}%', bbox={'facecolor': 'white', 'pad': 10})
-plt.show()
+if st.button("Predict"):
+    if image_up is None:
+        st.error("Por favor, introduce una imagen.")
+    else:
+        prob_traf = model.predict(img.reshape((1,32,32,3)))[0][0]
+        st.write(f'Probabilidad de tráfico: {prob_traf*100}%')
 
+    #fig, ax = plt.subplots(1)
+    #ax.imshow(image, interpolation='nearest')
+    #ax.text(image.size[0]/5, image.size[1]/10, f'Probabilidad de tráfico: {round(prob_traf*100,2)}%', bbox={'facecolor': 'white', 'pad': 10})
+    #plt.show()
