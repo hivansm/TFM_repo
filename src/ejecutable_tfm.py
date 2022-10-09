@@ -23,7 +23,7 @@ st.title('Predicción de tráfico')
 
 #if (len(sys.argv)==2):
 #    image = Image.open('../resources/' + sys.argv[1])
-model = keras.models.load_model('../models/model04.h5')
+model = keras.models.load_model('models/model04.h5')
 
 #elif (len(sys.argv)==3):
 #    image = Image.open('../resources/' + sys.argv[1])
