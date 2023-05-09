@@ -18,6 +18,9 @@ import matplotlib.pyplot as plt
 import sys
 import streamlit as st
 import io
+import requests
+from bs4 import BeautifulSoup #Hay que instalar
+import time
 
 st.title('Predicción de tráfico')
 
@@ -35,23 +38,119 @@ model = keras.models.load_model('models/model04.h5')
 #print(image.mode)
 #print(image.size)
 
-image_up = st.file_uploader('Imagen a analizar')
 
-if image_up is not None:
-    bytes_data = image_up.read()
-    image = Image.open(io.BytesIO(bytes_data))
+### CODIGO ANTES ###
+#image_up = st.file_uploader('Imagen a analizar')
+#
+#if image_up is not None:
+#    bytes_data = image_up.read()
+#    image = Image.open(io.BytesIO(bytes_data))
+#    
+#    img = np.array(image.resize((32,32)))/255
+#    st.image(image)
+#
+#if st.button("Predict"):
+#    if image_up is None:
+#        st.error("Por favor, introduce una imagen.")
+#    else:
+#        prob_traf = model.predict(img.reshape((1,32,32,3)))[0][0]
+#        st.write(f'Probabilidad de tráfico: {prob_traf*100}%')
+
+########################
+
+### Codigo ahora ###
+
+#img1 = [st.empty()]
+
+col1, col2, col3, col4 = st.columns(4)
+
+try:
+    url = [ 'https://www.camarasdgt.es/madrid/a-1/km-21-000-a-121000/',
+            'https://www.camarasdgt.es/madrid/m-50/km-17-500/',
+            'https://www.camarasdgt.es/madrid/a-4/km-49-100/',
+            'https://www.camarasdgt.es/madrid/m-40/km-6-300/'] # URL de la página web de la DGT
     
-    img = np.array(image.resize((32,32)))/255
-    st.image(image)
 
-if st.button("Predict"):
-    if image_up is None:
-        st.error("Por favor, introduce una imagen.")
-    else:
-        prob_traf = model.predict(img.reshape((1,32,32,3)))[0][0]
-        st.write(f'Probabilidad de tráfico: {prob_traf*100}%')
+    response = [requests.get(url[0]),
+                requests.get(url[1]),
+                requests.get(url[2]),
+                requests.get(url[3])] # Hacer una solicitud HTTP GET
 
-    #fig, ax = plt.subplots(1)
-    #ax.imshow(image, interpolation='nearest')
-    #ax.text(image.size[0]/5, image.size[1]/10, f'Probabilidad de tráfico: {round(prob_traf*100,2)}%', bbox={'facecolor': 'white', 'pad': 10})
-    #plt.show()
+    soup = [BeautifulSoup(response[0].content, 'html.parser'),
+            BeautifulSoup(response[1].content, 'html.parser'),
+            BeautifulSoup(response[2].content, 'html.parser'),
+            BeautifulSoup(response[3].content, 'html.parser')] # Analizar el HTML con BeautifulSoup
+    
+    
+    # Encontrar la URL de la imagen más reciente
+    img = [ soup[0].find_all('img', {'title': 'Cámara Carretera A-1 P.k.:  Via de Servicio A-121.000'})[0],
+            soup[1].find_all('img', {'title': 'Cámara Carretera M-50 P.k.:  17.500'})[0],
+            soup[2].find_all('img', {'title': 'Cámara Carretera A-4 P.k.:  49.100 Pasado Aranjuez '})[0],
+            soup[3].find_all('img', {'title': 'Cámara Carretera M-40 P.k.:  6.300 Silvano madrid'})[0]]
+
+
+    img_url = [img[0]['src'], 
+                img[1]['src'], 
+                img[2]['src'],
+                img[3]['src']]
+
+    # Descargar la imagen
+    bytes_data = [requests.get(img_url[0]).content,
+                    requests.get(img_url[1]).content,
+                    requests.get(img_url[2]).content,
+                    requests.get(img_url[3]).content]
+
+    image = [Image.open(io.BytesIO(bytes_data[0])),
+            Image.open(io.BytesIO(bytes_data[1])),
+            Image.open(io.BytesIO(bytes_data[2])),
+            Image.open(io.BytesIO(bytes_data[3]))]
+
+    img = [np.array(image[0].resize((32,32)))/255,
+            np.array(image[1].resize((32,32)))/255,
+            np.array(image[2].resize((32,32)))/255,
+            np.array(image[3].resize((32,32)))/255]
+
+    image = [np.array(image[0].resize((400,400))),
+            np.array(image[1].resize((400,400))),
+            np.array(image[2].resize((400,400))),
+            np.array(image[3].resize((400,400)))]
+
+    prob_traf = [model.predict(img[0].reshape((1,32,32,3)))[0][0],
+                model.predict(img[1].reshape((1,32,32,3)))[0][0],
+                model.predict(img[2].reshape((1,32,32,3)))[0][0],
+                model.predict(img[3].reshape((1,32,32,3)))[0][0]]
+
+    #img1[0].image(image)
+    carreteras = ['Carretera A-1 P.k.:  Via de Servicio A-121.000',
+            'Carretera M-50 P.k.:  17.500',
+            'Carretera A-4 P.k.:  49.100 Pasado Aranjuez',
+            'Carretera M-40 P.k.:  6.300 Silvano madrid']
+
+    col1.write(carreteras[0])
+    col1.image(image[0])
+    col1.write(f'Probabilidad de tráfico: {prob_traf[0]*100}%')
+    
+    col2.write(carreteras[1])
+    col2.image(image[1])
+    col2.write(f'Probabilidad de tráfico: {prob_traf[1]*100}%')
+
+    col3.write(carreteras[2])
+    col3.image(image[2])
+    col3.write(f'Probabilidad de tráfico: {prob_traf[2]*100}%')
+
+    col4.write(carreteras[3])
+    col4.image(image[3])
+    col4.write(f'Probabilidad de tráfico: {prob_traf[3]*100}%')
+
+
+    for i in range(4):
+        if(prob_traf[i] > 0.9):
+            st.error(f'ALERTA: Retención en {carreteras[i]}')
+    
+
+    print('Imagen descargada correctamente')
+except Exception as e:
+    print('Error al descargar la imagen: ' + str(e))
+
+time.sleep(2 * 60) # Esperar 2 minutos antes de descargar la próxima imagen
+st.experimental_rerun()
