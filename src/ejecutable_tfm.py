@@ -144,7 +144,7 @@ try:
 
 
     for i in range(4):
-        if(prob_traf[i] > 0.9):
+        if(prob_traf[i] > 0.09):
             st.error(f'ALERTA: Retención en {carreteras[i]}')
     
 
