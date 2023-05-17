@@ -128,19 +128,19 @@ try:
 
     col1.write(carreteras[0])
     col1.image(image[0])
-    col1.write(f'Probabilidad de tráfico: {round(prob_traf[0]*100),2}%')
+    col1.write(f'Probabilidad de tráfico: {round(prob_traf[0]*100,2)}%')
     
     col2.write(carreteras[1])
     col2.image(image[1])
-    col2.write(f'Probabilidad de tráfico: {round(prob_traf[1]*100)}%')
+    col2.write(f'Probabilidad de tráfico: {round(prob_traf[1]*100,2)}%')
 
     col3.write(carreteras[2])
     col3.image(image[2])
-    col3.write(f'Probabilidad de tráfico: {round(prob_traf[2]*100)}%')
+    col3.write(f'Probabilidad de tráfico: {round(prob_traf[2]*100,2)}%')
 
     col4.write(carreteras[3])
     col4.image(image[3])
-    col4.write(f'Probabilidad de tráfico: {round(prob_traf[3]*100)}%')
+    col4.write(f'Probabilidad de tráfico: {round(prob_traf[3]*100,2)}%')
 
 
     for i in range(4):
